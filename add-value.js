@@ -4,6 +4,7 @@ async function main(sleep = 5000) {
   try {
     var conn = await getConnection(false);
 
+    // should be done in setup/configuration -- cannot be changed while a transaction is running(?)
     await new Promise((r, j) => conn.query('SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;', e => e ? j(e) : r()));
     await new Promise((r, j) => conn.query('START TRANSACTION;', e => e ? j(e) : r()));
 
