@@ -6,7 +6,7 @@ var schema = `
     name varchar(100) null,
     balance int not null default 0
   );
-  insert into balance() values ();
+  insert ignore into balance(id) values (1);
 `;
 
 function dropDbQuery(name) {
@@ -43,13 +43,11 @@ async function getConnection(reinitialize = true, dbName = 'my_db') {
   await new Promise((r, j) => connection.query(useDbQuery(dbName), e => e ? j(e) : r()));
   // console.log('got done: query: useDbQuery');
 
-  if (reinitialize) {
-    var schemaConnection = mysql.createConnection({ ...config, database: dbName, multipleStatements: true, });
-    await new Promise((r, j) => schemaConnection.query(schema, e => e ? j(e) : r()));
-    // console.log('got done: schemaConnection.query: schema');
-    await new Promise((r, j) => schemaConnection.end(e => e ? j(e) : r()));
-    // console.log('got done: schemaConnection.end');
-  }
+  var schemaConnection = mysql.createConnection({ ...config, database: dbName, multipleStatements: true, });
+  await new Promise((r, j) => schemaConnection.query(schema, e => e ? j(e) : r()));
+  // console.log('got done: schemaConnection.query: schema');
+  await new Promise((r, j) => schemaConnection.end(e => e ? j(e) : r()));
+  // console.log('got done: schemaConnection.end');
   
   return connection;
 }

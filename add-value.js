@@ -23,8 +23,10 @@ async function main(sleep = 5000) {
 
   } catch (e) {
     // rethrow transaction errors
-    if (e.code === 'ER_LOCK_DEADLOCK')
+    if (e.code === 'ER_LOCK_DEADLOCK') {
+      await new Promise(r => setTimeout(r)); // not sure why this is necessary
       throw e;
+    }
 
     console.error(e);
   } finally {
@@ -45,6 +47,7 @@ if (require.main === module) {
       await p2;
     } catch (e) {
       // if we are here, we are catching something that got rethrown in the main function
+      // because the whole http request failed, we can retry it afterwards.
       console.log('we saved the day and prevented "succeeding" the lost update!')
     }
   })();
