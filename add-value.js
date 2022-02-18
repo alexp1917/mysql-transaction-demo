@@ -1,6 +1,6 @@
 var { getConnection } = require('./common');
 
-async function main() {
+async function main(sleep = 5000) {
   try {
     var conn = await getConnection();
 
@@ -12,6 +12,10 @@ async function main() {
     console.log('returned:', returned[0].balance);
     var newValue = returned[0].balance + 10;
     console.log('newValue:', newValue);
+
+    console.log('sleeping for', sleep, 'ms');
+    await new Promise(r => setTimeout(r, sleep));
+    console.log('sleeping for', sleep, 'ms', 'done');
 
     await new Promise((r, j) => conn.query('update balance set balance = ? where id = 1;', [newValue], (e) => e ? j(e) : r()));
     await new Promise((r, j) => conn.query('COMMIT;', e => e ? j(e) : r()));
