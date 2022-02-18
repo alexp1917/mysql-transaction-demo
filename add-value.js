@@ -22,6 +22,10 @@ async function main(sleep = 5000) {
     console.log('balance is', (await new Promise((r, j) => conn.query('select balance from balance where id = 1;', (e, data) => e ? j(e) : r(data)))));
 
   } catch (e) {
+    // rethrow transaction errors
+    if (e.code === 'ER_LOCK_DEADLOCK')
+      throw e;
+
     console.error(e);
   } finally {
     try {
@@ -33,5 +37,15 @@ async function main(sleep = 5000) {
 }
 
 if (require.main === module) {
-  main();
+  var p1 = main();
+  var p2 = main();
+
+  (async () => {
+    try {
+      await p2;
+    } catch (e) {
+      // if we are here, we are catching something that got rethrown in the main function
+      console.log('we saved the day and prevented "succeeding" the lost update!')
+    }
+  })();
 }
