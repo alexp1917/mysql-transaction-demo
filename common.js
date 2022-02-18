@@ -22,7 +22,7 @@ function useDbQuery(name) {
 }
 
 // todo: error handling inside this function (close connections on failure)
-async function getConnection(dbName = 'my_db') {
+async function getConnection(reinitialize = true, dbName = 'my_db') {
   var config = {
     host     : 'localhost',
     user     : 'root',
@@ -32,18 +32,24 @@ async function getConnection(dbName = 'my_db') {
   var connection = mysql.createConnection(config);
   await new Promise((r, j) => connection.connect({}, e => e ? j(e) : r()));
   // console.log('got done: connect');
-  await new Promise((r, j) => connection.query(dropDbQuery(dbName), e => e ? j(e) : r()));
-  // console.log('got done: query: dropDbQuery');
+
+  if (reinitialize) {
+    await new Promise((r, j) => connection.query(dropDbQuery(dbName), e => e ? j(e) : r()));
+    // console.log('got done: query: dropDbQuery');
+  }
+
   await new Promise((r, j) => connection.query(createDbQuery(dbName), e => e ? j(e) : r()));
   // console.log('got done: query: createDbQuery');
   await new Promise((r, j) => connection.query(useDbQuery(dbName), e => e ? j(e) : r()));
   // console.log('got done: query: useDbQuery');
 
-  var schemaConnection = mysql.createConnection({ ...config, database: dbName, multipleStatements: true, });
-  await new Promise((r, j) => schemaConnection.query(schema, e => e ? j(e) : r()));
-  // console.log('got done: schemaConnection.query: schema');
-  await new Promise((r, j) => schemaConnection.end(e => e ? j(e) : r()));
-  // console.log('got done: schemaConnection.end');
+  if (reinitialize) {
+    var schemaConnection = mysql.createConnection({ ...config, database: dbName, multipleStatements: true, });
+    await new Promise((r, j) => schemaConnection.query(schema, e => e ? j(e) : r()));
+    // console.log('got done: schemaConnection.query: schema');
+    await new Promise((r, j) => schemaConnection.end(e => e ? j(e) : r()));
+    // console.log('got done: schemaConnection.end');
+  }
   
   return connection;
 }

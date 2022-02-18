@@ -2,7 +2,7 @@ var { getConnection } = require('./common');
 
 async function main(sleep = 5000) {
   try {
-    var conn = await getConnection();
+    var conn = await getConnection(false);
 
     await new Promise((r, j) => conn.query('SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;', e => e ? j(e) : r()));
     await new Promise((r, j) => conn.query('START TRANSACTION;', e => e ? j(e) : r()));
